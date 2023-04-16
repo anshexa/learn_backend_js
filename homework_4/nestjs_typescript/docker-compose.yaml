@@ -1,0 +1,44 @@
+version: '3.9'
+
+services:
+  main:
+    container_name: main
+    build:
+      context: .    # весь текущий каталог отправить в образ докер
+      dockerfile: ./Dockerfile
+    env_file:
+      - .development.env
+    volumes:
+      - .:/app  # сопоставляем текущую папку с рабочей директорией внутри докер контейнера
+      - ./node_modules:/app/node_modules    # /путь/на/сервере:/папка/в/контейнере
+    ports:
+      - 5000:5000
+      - 9229:9229
+    command: npm run start:dev  # команда для запуска
+    depends_on:
+      - postgres
+    restart: always
+    networks:
+      - webnet
+
+  postgres:
+    container_name: postgres
+    image: postgres:15
+    env_file:
+      - .development.env
+    environment:
+      PG_DATA: /var/lib/postgresgl/data
+    ports:
+      - 5432:5432
+    volumes:
+      - pgdata:/var/lib/postgresgl/data   # имя_тома:/папка/в/контейнере
+    restart: always
+    networks:
+      - webnet
+
+volumes:
+  pgdata:
+
+networks:
+  webnet:
+    external: true
